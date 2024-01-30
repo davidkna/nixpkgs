@@ -83,7 +83,7 @@
 let
   inherit (darwin.apple_sdk_11_0.frameworks)
     AVFoundation Accelerate Cocoa CoreAudio CoreFoundation CoreMedia
-    MediaPlayer;
+    MediaPlayer VideoToolbox;
   luaEnv = lua.withPackages (ps: with ps; [ luasocket ]);
 
   overrideSDK = platform: version:
@@ -140,6 +140,9 @@ in stdenv'.mkDerivation (finalAttrs: {
     # Disable whilst Swift isn't supported
     (lib.mesonEnable "swift-build" swiftSupport)
     (lib.mesonEnable "macos-cocoa-cb" swiftSupport)
+  ] ++ lib.optionals stdenv.isDarwin [
+    # Toggle explicitly because it fails on darwin
+    (lib.mesonEnable "videotoolbox-pl" vulkanSupport)
   ];
 
   mesonAutoFeatures = "auto";
@@ -196,7 +199,7 @@ in stdenv'.mkDerivation (finalAttrs: {
     ++ lib.optionals zimgSupport        [ zimg ]
     ++ lib.optionals stdenv.isLinux     [ nv-codec-headers-11 ]
     ++ lib.optionals stdenv.isDarwin    [ libiconv ]
-    ++ lib.optionals stdenv.isDarwin    [ CoreFoundation Cocoa CoreAudio MediaPlayer Accelerate ]
+    ++ lib.optionals stdenv.isDarwin    [ Accelerate CoreFoundation Cocoa CoreAudio MediaPlayer VideoToolbox ]
     ++ lib.optionals (stdenv.isDarwin && swiftSupport) [ AVFoundation CoreMedia ];
 
   postBuild = lib.optionalString stdenv.isDarwin ''
